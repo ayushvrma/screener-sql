@@ -9,12 +9,28 @@
 
   const ontology = await ScreenerNL.loadOntology(chrome.runtime.getURL("src/ontology.json"));
 
-  function run() {
+  async function run() {
     const nl = input.value.trim();
     if (!nl) return;
-    const { query, warnings } = ScreenerNL.translate(nl, ontology);
-    out.textContent = query || "(nothing matched)";
-    warn.innerHTML = warnings.map((w) => `<div>⚠ ${w.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}</div>`).join("");
+    const settings = await chrome.storage.local.get(["geminiApiKey", "geminiModel"]);
+    out.textContent = "…";
+    const result = await ScreenerNL.translateWithFallback(nl, ontology, {
+      apiKey: settings.geminiApiKey || "",
+      model: settings.geminiModel || "gemini-2.5-flash",
+    });
+    const { query, warnings, needsSetup } = result;
+    out.textContent = query || (needsSetup ? "" : "(nothing matched)");
+    const esc = (w) => w.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    let warnHtml = warnings.map((w) => `<div>⚠ ${esc(w)}</div>`).join("");
+    if (needsSetup && !query) {
+      warnHtml = `<div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;padding:8px;border-radius:6px;margin-bottom:6px">
+        <strong>Need Gemini fallback.</strong> Rule engine couldn't match.
+        <button id="setup-link" style="margin-top:6px;padding:4px 8px;border:1px solid #1d4ed8;background:#2563eb;color:#fff;border-radius:4px;cursor:pointer">Set up Gemini →</button>
+      </div>` + warnHtml;
+    }
+    warn.innerHTML = warnHtml;
+    const setupLink = document.getElementById("setup-link");
+    if (setupLink) setupLink.addEventListener("click", () => chrome.runtime.openOptionsPage());
     if (query) {
       openLink.href = ScreenerNL.screenerUrl(query);
       openLink.style.display = "inline";

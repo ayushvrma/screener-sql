@@ -54,10 +54,26 @@
     if (!nl) return;
     try {
       const ontology = await getOntology();
-      const { query, warnings } = ScreenerNL.translate(nl, ontology);
+      const settings = await chrome.storage.local.get(["geminiApiKey", "geminiModel"]);
+      output.textContent = "…";
+      const result = await ScreenerNL.translateWithFallback(nl, ontology, {
+        apiKey: settings.geminiApiKey || "",
+        model: settings.geminiModel || "gemini-2.5-flash",
+      });
+      const { query, warnings, needsSetup } = result;
       lastQuery = query;
-      output.textContent = query || "(nothing matched)";
-      warn.innerHTML = warnings.map((w) => `<div>⚠ ${escapeHtml(w)}</div>`).join("");
+      output.textContent = query || (needsSetup ? "" : "(nothing matched)");
+      let warnHtml = warnings.map((w) => `<div>⚠ ${escapeHtml(w)}</div>`).join("");
+      if (needsSetup && !query) {
+        warnHtml = `<div class="snl-setup">
+          <strong>Need Gemini fallback for this.</strong>
+          The rule engine couldn't match your phrasing. Paste a free Gemini API key to enable smarter translation.
+          <button class="snl-setup-btn">Set up Gemini →</button>
+        </div>` + warnHtml;
+      }
+      warn.innerHTML = warnHtml;
+      const setupBtn = warn.querySelector(".snl-setup-btn");
+      if (setupBtn) setupBtn.addEventListener("click", () => chrome.runtime.sendMessage({ type: "openSetup" }));
       btnFill.disabled = !query;
       if (query) {
         openLink.href = ScreenerNL.screenerUrl(query);

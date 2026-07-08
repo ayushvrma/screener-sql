@@ -100,3 +100,22 @@
   margin-top: 6px;
   font-size: 12px;
 }
+.snl-setup {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.snl-setup strong { display: block; margin-bottom: 4px; }
+.snl-setup-btn {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: 1px solid #1d4ed8;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+}

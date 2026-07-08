@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Screener NL — options</title>
+<style>
+  body { font: 13px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; color: #111; margin: 0; padding: 20px; max-width: 480px; }
+  h1 { font-size: 15px; margin: 0 0 12px; }
+  label { display: block; margin-top: 12px; font-weight: 500; }
+  input, textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d0d7de; border-radius: 6px; font: inherit; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  button { padding: 6px 12px; border: 1px solid #d0d7de; background: #f6f8fa; border-radius: 6px; cursor: pointer; }
+  button.primary { background: #2563eb; color: #fff; border-color: #1d4ed8; }
+  .hint { color: #6b7280; font-size: 12px; margin-top: 4px; }
+  .ok { color: #166534; }
+  .warn { color: #92400e; }
+  a { color: #2563eb; }
+</style>
+</head>
+<body>
+  <h1>Screener NL — options</h1>
+  <p class="hint">
+    Rule-based translation runs first and needs no key. When the rules can't parse your English,
+    the panel can fall back to <a href="https://ai.google.dev/" target="_blank" rel="noopener">Google's Gemini API</a> if you paste a key here.
+    The key is stored locally in <code>chrome.storage.local</code> and only sent to Google.
+  </p>
+
+  <label for="key">Gemini API key (BYOK)</label>
+  <input id="key" type="password" autocomplete="off" placeholder="AIza…">
+  <div class="hint">Get one at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Leave blank to disable the fallback.</div>
+
+  <label for="model">Model</label>
+  <input id="model" type="text" value="gemini-2.5-flash">
+  <div class="hint">Any model that supports <code>generateContent</code>. Flash is cheapest.</div>
+
+  <div class="row">
+    <button id="save" class="primary">Save</button>
+    <button id="clear">Clear key</button>
+    <span id="status"></span>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
