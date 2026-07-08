@@ -139,27 +139,28 @@
     return res.json();
   }
 
-  // ---- Gemini fallback (BYOK) -----------------------------------------------
-  // Only used when rule-based parse returns warnings AND user configured a key.
-  // Never called during unit tests (they pass ontology directly to translate()).
-  async function translateWithGemini(nl, ontology, { apiKey, model }) {
+  // ---- LLM fallback (BYOK, provider-agnostic) -------------------------------
+  // Rule-based runs first; if it produces warnings and the user has a key
+  // saved, we call the selected provider through the registry in providers.js.
+
+  const MAX_INPUT_CHARS = 2000; // caps prompt size (also blunts prompt-injection amplification)
+
+  function buildSystemPrompt(ontology) {
     const variableNames = [];
     for (const group of Object.values(ontology.variables)) {
       for (const v of group) variableNames.push(v.name);
     }
-    const system = [
+    return [
       "You translate an English stock-screening idea for Indian equities into a screener.in query.",
-      "Return ONLY a JSON object {\"query\": \"...\"} — no prose, no code fences.",
       "The query must use ONLY these variable names (verbatim, case-sensitive):",
       variableNames.join(", "),
-      "Operators: > < >= <= = AND OR ( )   RHS may be a number, another variable, or an arithmetic expression using + - * /.",
+      "Operators: > < >= <= = AND OR ( ) . RHS may be a number, another variable, or an arithmetic expression using + - * /.",
       "",
       "APPROXIMATE liberally — this is a discovery tool, not a legal filing:",
       "- 'small cap' → Market Capitalization < 5000    'mid cap' → 5000..20000    'large cap' → > 20000",
       "- 'profitable' → Net profit > 0                 'growing' → Sales growth > 10 AND Profit growth > 10",
       "- 'cheap' → Price to earning < 15               'quality' → Return on capital employed > 20 AND Debt to equity < 0.5",
       "- 'dividend aristocrat' / 'dividend payer' → Dividend yield > 2 AND Average dividend payout 3years > 20",
-      "- 'fii buying / rising fii stake' → FII holding > 5 AND FII holding > FII holding    (use the QoQ variant if a preceding-period variable exists; otherwise absolute + increase heuristic)",
       "- 'strong momentum' → Current price > DMA 50 AND Current price > DMA 200",
       "- 'undervalued' → Price to earning < 15 AND Price to book value < 3",
       "- 'monopoly' / 'moat' → Return on capital employed > 25 AND OPM > 20 AND Debt to equity < 0.3",
@@ -171,27 +172,13 @@
       "",
       "Only return {\"query\":\"\"} when the request is genuinely un-approximable (e.g. 'stocks with lots of insider buying today' — Screener has no insider-txn window).",
     ].join("\n");
+  }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: nl }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0 },
-      }),
-    });
-    if (!res.ok) throw new Error(`gemini ${res.status}: ${await res.text()}`);
-    const data = await res.json();
-    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    let parsed;
-    try { parsed = JSON.parse(raw); } catch { throw new Error("gemini returned non-JSON: " + raw.slice(0, 200)); }
-    const query = (parsed.query || "").trim();
-    if (!query) return { query: "", warnings: ["gemini: could not express in ontology"] };
-
-    // Guardrail: every LHS/RHS variable in the returned query must be in the ontology.
-    const allowed = new Set(variableNames.map((n) => n.toLowerCase()));
+  function guardrail(query, ontology) {
+    const variableNames = [];
+    for (const group of Object.values(ontology.variables)) {
+      for (const v of group) variableNames.push(v.name);
+    }
     const tokens = query.split(/\bAND\b|\bOR\b|[()]/i).map((s) => s.trim()).filter(Boolean);
     const badVars = [];
     for (const clause of tokens) {
@@ -202,29 +189,64 @@
         if (!varHit) badVars.push(p);
       }
     }
-    if (badVars.length) {
-      return { query: "", warnings: [`gemini emitted unknown variables: ${badVars.slice(0, 3).join(", ")}`] };
-    }
-    return { query, warnings: ["✨ gemini fallback used"] };
+    return badVars;
   }
 
-  async function translateWithFallback(nl, ontology, { apiKey, model = "gemini-2.5-flash" } = {}) {
+  async function translateWithLLM(nl, ontology, { providerId, apiKey, model }) {
+    if (!ScreenerNLProviders) throw new Error("providers.js not loaded");
+    const provider = ScreenerNLProviders.getProvider(providerId);
+    if (!provider) throw new Error(`unknown provider: ${providerId}`);
+    const modelToUse = model || provider.defaultModel;
+
+    const raw = await ScreenerNLProviders.callProvider({
+      providerId, apiKey, model: modelToUse,
+      system: buildSystemPrompt(ontology),
+      user: nl.slice(0, MAX_INPUT_CHARS),
+    });
+
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch {
+      // Some providers wrap JSON in markdown fences even when told not to. Salvage.
+      const m = raw.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error(`${provider.name} returned non-JSON: ${raw.slice(0, 200)}`);
+      parsed = JSON.parse(m[0]);
+    }
+    const query = (parsed.query || "").trim();
+    const badge = `✨ ${provider.name.toLowerCase()} used`;
+    if (!query) return { query: "", warnings: [`${provider.name}: could not express in ontology`] };
+    const badVars = guardrail(query, ontology);
+    if (badVars.length) {
+      return { query: "", warnings: [`${provider.name} emitted unknown variables: ${badVars.slice(0, 3).join(", ")}`] };
+    }
+    return { query, warnings: [badge] };
+  }
+
+  async function translateWithFallback(nl, ontology, settings = {}) {
     const first = translate(nl, ontology);
     if (first.query && first.warnings.length === 0) return first;
-    if (!apiKey) {
-      // Rules failed AND no key set → signal to the UI that setup is required.
+
+    const { providerId, apiKey, model } = settings;
+    if (!apiKey || !providerId) {
       return { query: first.query, warnings: first.warnings, needsSetup: true };
     }
+    if (nl.length > MAX_INPUT_CHARS) {
+      return {
+        query: first.query,
+        warnings: [...first.warnings, `input truncated at ${MAX_INPUT_CHARS} chars before calling LLM`],
+      };
+    }
     try {
-      const fb = await translateWithGemini(nl, ontology, { apiKey, model });
+      const fb = await translateWithLLM(nl, ontology, { providerId, apiKey, model });
       if (fb.query) return fb;
       return { query: first.query, warnings: [...first.warnings, ...fb.warnings] };
     } catch (err) {
-      return { query: first.query, warnings: [...first.warnings, `gemini error: ${err.message}`] };
+      const msg = err && err.message ? err.message : String(err);
+      return { query: first.query, warnings: [...first.warnings, `llm error: ${msg}`] };
     }
   }
 
-  const api = { translate, translateWithFallback, screenerUrl, loadOntology, buildLookup, splitClauses, parseClause };
+  const api = { translate, translateWithFallback, screenerUrl, loadOntology, buildLookup, splitClauses, parseClause, MAX_INPUT_CHARS };
   root.ScreenerNL = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

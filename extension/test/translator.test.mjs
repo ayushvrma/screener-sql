@@ -6,13 +6,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+const providersSrc = readFileSync(resolve(HERE, "..", "src", "providers.js"), "utf8");
 const translatorSrc = readFileSync(resolve(HERE, "..", "src", "translator.js"), "utf8");
 const ontology = JSON.parse(readFileSync(resolve(HERE, "..", "src", "ontology.json"), "utf8"));
 
-// Evaluate the IIFE — attaches to globalThis, same as <script> loading in the browser.
+// Evaluate the IIFEs — attach to globalThis, same as <script> loading in the browser.
+new Function(providersSrc)();
 new Function(translatorSrc)();
 const NL = globalThis.ScreenerNL;
+const PROV = globalThis.ScreenerNLProviders;
 assert.ok(NL, "ScreenerNL should be attached to globalThis");
+assert.ok(PROV, "ScreenerNLProviders should be attached to globalThis");
 
 const CASES = [
   {
@@ -68,4 +72,36 @@ test("garbage in produces warnings, not throws", () => {
 test("percent suffix is stripped in numeric parse", () => {
   const out = NL.translate("roe above 22%", ontology);
   assert.equal(out.query, "Return on equity > 22");
+});
+
+test("provider registry: exactly 4 providers, each with required fields", () => {
+  const provs = PROV.listProviders();
+  assert.equal(provs.length, 4);
+  for (const p of provs) {
+    assert.ok(p.id && p.name && p.defaultModel);
+    assert.ok(Array.isArray(p.models) && p.models.includes(p.defaultModel));
+    assert.equal(typeof p.endpoint, "function");
+    assert.equal(typeof p.buildHeaders, "function");
+    assert.equal(typeof p.buildBody, "function");
+    assert.equal(typeof p.parseResponse, "function");
+    // sanity: the endpoint URL uses HTTPS
+    assert.match(p.endpoint(p.defaultModel), /^https:\/\//);
+    // sanity: pricingHint is human text (non-empty)
+    assert.ok(p.pricingHint.length > 0);
+  }
+});
+
+test("translateWithFallback returns needsSetup when no key configured", async () => {
+  const out = await NL.translateWithFallback("dividend aristocrats", ontology, {
+    providerId: "", apiKey: "", model: "",
+  });
+  assert.equal(out.needsSetup, true);
+});
+
+test("translateWithFallback surfaces network error when key set but fetch fails", async () => {
+  // Force a failure by pointing at a bogus provider id
+  const out = await NL.translateWithFallback("dividend aristocrats", ontology, {
+    providerId: "not-a-real-provider", apiKey: "fake", model: "",
+  });
+  assert.ok(out.warnings.some((w) => w.includes("llm error") || w.includes("unknown provider")));
 });

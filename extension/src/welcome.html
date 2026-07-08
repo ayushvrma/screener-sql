@@ -11,8 +11,9 @@
   .step { margin-top: 20px; }
   .step h2 { font-size: 14px; margin: 0 0 6px; }
   label { display: block; margin-top: 12px; font-weight: 500; font-size: 13px; }
-  input { width: 100%; box-sizing: border-box; padding: 9px 10px; border: 1px solid #d0d7de; border-radius: 6px; font: inherit; }
+  input, select { width: 100%; box-sizing: border-box; padding: 9px 10px; border: 1px solid #d0d7de; border-radius: 6px; font: inherit; background: #fff; }
   .row { display: flex; gap: 8px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   button { padding: 8px 14px; border: 1px solid #d0d7de; background: #f6f8fa; border-radius: 6px; cursor: pointer; font: inherit; }
   button.primary { background: #2563eb; color: #fff; border-color: #1d4ed8; }
   button.primary:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -22,6 +23,7 @@
   .err { color: #b91c1c; font-weight: 500; }
   code { background: #f6f8fa; padding: 1px 5px; border-radius: 4px; border: 1px solid #eaeef2; }
   .kbd { display: inline-block; padding: 1px 6px; font: 12px ui-monospace, "SF Mono", Menlo; border: 1px solid #d0d7de; border-bottom-width: 2px; border-radius: 4px; background: #fff; }
+  .price { color: #6b7280; font-size: 12px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -36,18 +38,31 @@
   </div>
 
   <div class="step">
-    <h2>2) Gemini fallback — needs your API key</h2>
+    <h2>2) LLM fallback — bring your own key (BYOK)</h2>
     <p>When your English uses phrasings the rule engine doesn't recognise, the panel can
-      fall back to <a href="https://ai.google.dev/" target="_blank" rel="noopener">Google Gemini 2.5 Flash</a>
-      to translate. Google gives every account a free tier that covers hundreds of queries a day.</p>
+      call an LLM to translate. Pick any provider — the key is stored locally in
+      <code>chrome.storage.local</code> and only ever sent to the provider you selected.</p>
 
-    <label for="key">Paste your Gemini API key</label>
-    <input id="key" type="password" placeholder="AIza…" autocomplete="off">
-    <div class="hint">
-      Don't have one? Grab one in ~30 seconds at
-      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.
-      Stored only in your browser (<code>chrome.storage.local</code>), never sent anywhere but Google.
+    <div class="grid-2">
+      <div>
+        <label for="provider">Provider</label>
+        <select id="provider">
+          <option value="gemini">Google Gemini</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic Claude</option>
+          <option value="deepseek">DeepSeek</option>
+        </select>
+      </div>
+      <div>
+        <label for="model">Model</label>
+        <select id="model"></select>
+      </div>
     </div>
+    <div class="price" id="pricing-hint"></div>
+
+    <label for="key">API key</label>
+    <input id="key" type="password" placeholder="…" autocomplete="off">
+    <div class="hint">Don't have one? <a id="key-get-link" href="#" target="_blank" rel="noopener">Get one from the provider →</a></div>
 
     <div class="row">
       <button id="save" class="primary" disabled>Save key</button>
@@ -63,6 +78,8 @@
     <p class="hint">Tip: <span class="kbd">⌘/Ctrl</span> + <span class="kbd">Enter</span> in the panel input runs the translation.</p>
   </div>
 </main>
+<script src="providers.js"></script>
+<script src="settings-io.js"></script>
 <script src="welcome.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Screener NL Query",
   "short_name": "Screener NL",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Turn plain English into a screener.in custom-screen query. Injects a small panel on Screener's screen builder.",
   "homepage_url": "https://github.com/ayushvrma/screener-sql",
   "icons": {
@@ -25,7 +25,7 @@
         "https://www.screener.in/screen/*",
         "https://www.screener.in/screens/*"
       ],
-      "js": ["src/translator.js", "src/content.js"],
+      "js": ["src/providers.js", "src/settings-io.js", "src/translator.js", "src/content.js"],
       "css": ["src/panel.css"],
       "run_at": "document_idle"
     }
@@ -37,7 +37,12 @@
     }
   ],
   "permissions": ["storage"],
-  "host_permissions": ["https://generativelanguage.googleapis.com/*"],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.deepseek.com/*"
+  ],
   "background": {
     "service_worker": "src/background.js"
   },

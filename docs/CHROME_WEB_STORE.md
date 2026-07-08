@@ -6,7 +6,7 @@ Everything you need to copy-paste into the [developer dashboard](https://chrome.
 
 ## 1. Upload
 
-- **Package:** `screener-nl-0.1.0.zip` — download from https://github.com/ayushvrma/screener-sql/releases/tag/v0.1.0
+- **Package:** `screener-nl-0.2.0.zip` — download from https://github.com/ayushvrma/screener-sql/releases/tag/v0.2.0
 
 ## 2. Store listing
 
@@ -17,7 +17,7 @@ Screener NL Query
 
 **Summary** (max 132 chars — appears under the title)
 ```
-Type stock-screening ideas in plain English. Get a valid screener.in query. Optional Gemini fallback for fuzzy phrasings.
+Type stock-screening ideas in plain English. Get a valid screener.in query. Optional LLM fallback (Gemini/OpenAI/Anthropic/DeepSeek).
 ```
 
 **Category**
@@ -42,12 +42,16 @@ Two translation engines, in order:
    ownership, `between X and Y` ranges, and variable-on-RHS comparisons like
    "current price below book value".
 
-2) Gemini 2.5 Flash fallback (opt-in, BYOK)
+2) LLM fallback (opt-in, bring-your-own-key, multi-provider)
    When your English uses colloquial phrasings the rule engine doesn't recognise
    ("dividend aristocrats", "compounders", "monopoly moats"), the extension can call
-   Google Gemini using YOUR OWN free API key from aistudio.google.com/apikey. Every
-   variable Gemini emits is validated against the Screener ontology, so it can't
-   hallucinate a variable Screener doesn't support.
+   an LLM using YOUR OWN API key. Pick any provider:
+   • Google Gemini (gemini-2.5-flash-lite — has a free tier)
+   • OpenAI (gpt-5-nano — cheapest per token)
+   • Anthropic Claude (claude-haiku-4-5)
+   • DeepSeek (deepseek-v4-flash)
+   Every variable the model emits is validated against the Screener ontology, so it
+   can't hallucinate a variable Screener doesn't support.
 
 Features
 • Floating panel on screener.in/screen/* that translates and fills the query textarea
@@ -87,9 +91,9 @@ Translate plain-English stock-screening ideas into screener.in query syntax and 
   Stores the user's optional Gemini API key and preferred model locally in chrome.storage.local. No data is transmitted anywhere by this permission.
   ```
 
-- `host_permissions: https://generativelanguage.googleapis.com/*`
+- `host_permissions:` (four LLM endpoints)
   ```
-  Sends the user's natural-language input to Google's Gemini API only when the local rule engine cannot translate it and the user has explicitly saved their own API key. No requests are made otherwise.
+  Sends the user's natural-language input to the LLM provider they selected (Google Gemini, OpenAI, Anthropic, or DeepSeek) only when the local rule engine cannot translate it and the user has explicitly saved their own API key. Each host permission serves exactly one provider; the extension will never call a provider whose key the user hasn't saved.
   ```
 
 - `content_scripts` on `screener.in`

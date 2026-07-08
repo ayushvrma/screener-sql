@@ -1,0 +1,58 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test & lint (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Unit tests
+        run: node --test extension/test/
+
+      - name: Generate icons
+        run: node extension/tools/make-icons.mjs
+
+      - name: web-ext lint (Mozilla's extension linter; also flags Chrome MV3 issues)
+        run: npx --yes web-ext@8 lint --source-dir extension --self-hosted --no-config-discovery
+        continue-on-error: false
+
+      - name: Build zip
+        run: node extension/tools/build.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.node == '22'
+        with:
+          name: extension-zip
+          path: extension/dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  python:
+    name: python CLI smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: CLI smoke test
+        run: |
+          out=$(python3 nl2screener/nl2screener.py "market cap over 5000 crore, roe above 20")
+          echo "$out"
+          [[ "$out" == "Market Capitalization > 5000 AND Return on equity > 20" ]]

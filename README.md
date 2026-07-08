@@ -7,16 +7,25 @@ Turn plain English into a [screener.in](https://www.screener.in) custom-screen q
 See [`docs/screenshots/`](docs/screenshots/) for a walkthrough of every stage — install, setup, rules-only success, Gemini fallback.
 
 Ships as:
-- **Chrome extension** (`extension/`) — a floating panel on `screener.in/screen/*` that translates your English and fills the query box in-place. First-run onboarding lets you paste a Gemini API key for smarter fallback when rules don't match.
+- **Chrome extension** (`extension/`) — a floating panel on `screener.in/screen/*` that translates your English and fills the query box in-place. First-run onboarding lets you paste an LLM API key (from any of Gemini, OpenAI, Anthropic, or DeepSeek) for smarter fallback when rules don't match.
 - **Python CLI** (`nl2screener/`) — same rule-based translator, scriptable for research / batch use.
 - **Ontology JSON** (`ontology/`) — the machine-readable Screener variable + operator inventory both consumers rely on.
 
 ## How the translation pipeline works
 
 1. **Rules run first (~1 ms).** Regex + synonym match against `ontology/screener_ontology.json`. Handles the vast majority of common ideas: PE, ROE, D/E, growth CAGRs, ownership %, Piotroski, DMA crossovers, `between X and Y` ranges, variable-on-RHS (`Current price < Book value`).
-2. **Gemini fallback (~500 ms, BYOK).** Only fires if rules produce warnings AND the user has saved a Gemini API key. Uses gemini-2.5-flash with a system prompt that lists every ontology variable verbatim and gives few-shot approximations (e.g. "small cap" → `Market Capitalization < 5000`).
-3. **Ontology guardrail.** Gemini's output is parsed and any variable name it emits is checked against the ontology JSON. If it hallucinates a Screener variable that doesn't exist, we reject with a warning instead of showing broken query text.
-4. **No key + rules fail → setup prompt.** The panel surfaces a "Set up Gemini →" button that opens the options page. The extension never nags — you can Skip on the welcome screen and rules-only mode continues to work forever.
+2. **LLM fallback (~500 ms, BYOK, provider-agnostic).** Only fires if rules produce warnings AND the user has saved a provider + API key. Provider registry lives in [`extension/src/providers.js`](extension/src/providers.js) — each entry is an `id`, `defaultModel`, `endpoint`, `buildHeaders`, `buildBody`, `parseResponse`. Adding a new provider is a single object.
+
+    | Provider | Default small model | Notes |
+    | --- | --- | --- |
+    | Google Gemini | `gemini-2.5-flash-lite` | free tier available |
+    | OpenAI | `gpt-5-nano` | cheapest per token |
+    | Anthropic Claude | `claude-haiku-4-5` | uses `anthropic-dangerous-direct-browser-access` |
+    | DeepSeek | `deepseek-v4-flash` | OpenAI-compatible endpoint |
+
+3. **Ontology guardrail.** The model's output is parsed and every variable name it emits is checked against the ontology JSON. Hallucinated variables → rejected with a warning, never rendered as a query.
+4. **No key + rules fail → setup prompt.** The panel surfaces a "Set up LLM →" button that opens the options page. Rules-only mode works forever if you skip.
+5. **Input cap + timeout.** Prompts are capped at 2 KB before hitting an LLM (blunts prompt-injection amplification); every LLM call has a 12 s `AbortController` timeout.
 
 ## Install (extension, unpacked)
 1. Grab `screener-nl-*.zip` from the [latest release](../../releases/latest) — or run `node extension/tools/build.mjs` yourself.
