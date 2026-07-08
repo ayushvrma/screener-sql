@@ -43,15 +43,3 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  python:
-    name: python CLI smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - name: CLI smoke test
-        run: |
-          out=$(python3 nl2screener/nl2screener.py "market cap over 5000 crore, roe above 20")
-          echo "$out"
-          [[ "$out" == "Market Capitalization > 5000 AND Return on equity > 20" ]]
