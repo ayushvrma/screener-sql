@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Screener NL Query",
+  "short_name": "Screener NL",
+  "version": "0.1.0",
+  "description": "Turn plain English into a screener.in custom-screen query. Injects a small panel on Screener's screen builder.",
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Screener NL Query",
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "src/icons/icon16.png",
+      "48": "src/icons/icon48.png",
+      "128": "src/icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.screener.in/screen/*",
+        "https://www.screener.in/screens/*"
+      ],
+      "js": ["src/translator.js", "src/content.js"],
+      "css": ["src/panel.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/ontology.json"],
+      "matches": ["https://www.screener.in/*"]
+    }
+  ],
+  "permissions": [],
+  "host_permissions": []
+}

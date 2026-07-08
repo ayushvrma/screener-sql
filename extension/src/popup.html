@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Screener NL</title>
+<style>
+  body { width: 340px; margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 13px; color: #111; }
+  header { padding: 10px 12px; border-bottom: 1px solid #d0d7de; background: #f6f8fa; font-weight: 600; }
+  main { padding: 12px; }
+  textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d0d7de; border-radius: 6px; font: inherit; resize: vertical; }
+  .row { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+  button { padding: 6px 10px; border: 1px solid #d0d7de; background: #f6f8fa; border-radius: 6px; cursor: pointer; }
+  .translate { background: #2563eb; color: #fff; border-color: #1d4ed8; }
+  pre { margin: 10px 0 0; padding: 8px; background: #f6f8fa; border-radius: 6px; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; min-height: 32px; }
+  a { color: #2563eb; text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  .warn { color: #92400e; font-size: 12px; margin-top: 6px; }
+  .hint { color: #6b7280; font-size: 11px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>NL → Screener query</header>
+<main>
+  <textarea id="input" rows="4" placeholder="e.g. mcap over 5000 crore, roe above 20, d/e under 0.5"></textarea>
+  <div class="row">
+    <button id="go" class="translate">Translate</button>
+    <a id="open" href="#" target="_blank" rel="noopener" style="display:none">Open on Screener ↗</a>
+  </div>
+  <pre id="out"></pre>
+  <div id="warn" class="warn"></div>
+  <div class="hint">Tip: on <code>screener.in/screen/raw/</code> a floating panel lets you fill the query box in-place.</div>
+</main>
+<script src="translator.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

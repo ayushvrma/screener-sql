@@ -1,0 +1,102 @@
+.snl-host {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 340px;
+  z-index: 2147483647;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #111;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+.snl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
+  cursor: grab;
+}
+.snl-title {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.snl-collapse {
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 6px;
+}
+.snl-body {
+  padding: 10px 12px;
+  display: block;
+}
+.snl-collapsed .snl-body {
+  display: none;
+}
+.snl-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+.snl-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.snl-actions button {
+  padding: 6px 10px;
+  border: 1px solid #d0d7de;
+  background: #f6f8fa;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.snl-actions button:hover:enabled {
+  background: #eef1f4;
+}
+.snl-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.snl-translate {
+  background: #2563eb !important;
+  color: #fff !important;
+  border-color: #1d4ed8 !important;
+}
+.snl-open {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+.snl-open:hover {
+  text-decoration: underline;
+}
+.snl-output {
+  margin: 10px 0 0;
+  padding: 8px;
+  background: #f6f8fa;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  min-height: 32px;
+}
+.snl-warn {
+  color: #92400e;
+  margin-top: 6px;
+  font-size: 12px;
+}

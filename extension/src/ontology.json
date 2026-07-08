@@ -1,0 +1,142 @@
+{
+  "meta": {
+    "source": "screener.in",
+    "compiled_on": "2026-07-08",
+    "notes": [
+      "Variable names are case-insensitive on screener.in but are typically written in Sentence Case",
+      "Screen queries are inequalities; custom ratios are formulas (no inequality)",
+      "RHS of any comparison may be a literal number OR another variable OR an arithmetic expression",
+      "The '%' suffix on numbers is accepted and ignored (e.g., 22% == 22)"
+    ]
+  },
+  "operators": {
+    "comparison": [">", "<", ">=", "<=", "="],
+    "logical": ["AND", "OR"],
+    "grouping": ["(", ")"],
+    "arithmetic": ["+", "-", "*", "/"]
+  },
+  "functions": [
+    { "name": "If", "signature": "If(condition, value_if_true, value_if_false)", "purpose": "Excel-style conditional; used to build score-like ratios" },
+    { "name": "power", "signature": "power(base, exponent)", "purpose": "Exponent" },
+    { "name": "least", "signature": "least(a, b, ...)", "purpose": "Minimum of arguments" },
+    { "name": "abs", "signature": "abs(x)", "purpose": "Absolute value" },
+    { "name": "sqrt", "signature": "sqrt(x)", "purpose": "Square root" },
+    { "name": "log", "signature": "log(x)", "purpose": "Natural log" },
+    { "name": "coalesce", "signature": "coalesce(a, b, ...)", "purpose": "First non-null argument" }
+  ],
+  "variables": {
+    "market_and_price": [
+      { "name": "Current price", "unit": "INR", "synonyms": ["price", "cmp", "current market price", "market price", "ltp"] },
+      { "name": "Market Capitalization", "unit": "INR Cr", "synonyms": ["market cap", "mcap", "m-cap", "market capitalisation"] },
+      { "name": "Book value", "unit": "INR", "synonyms": ["bv", "book value per share"] },
+      { "name": "High price all time", "unit": "INR", "synonyms": ["all time high", "ath"] },
+      { "name": "Low price all time", "unit": "INR", "synonyms": ["all time low", "atl"] },
+      { "name": "High price", "unit": "INR", "synonyms": ["52 week high", "52w high"] },
+      { "name": "Low price", "unit": "INR", "synonyms": ["52 week low", "52w low"] },
+      { "name": "VOLUME", "unit": "shares", "synonyms": ["volume", "traded volume", "daily volume"] },
+      { "name": "Volume 1week average", "unit": "shares", "synonyms": ["weekly average volume", "avg volume 1w"] },
+      { "name": "Volume 1month average", "unit": "shares", "synonyms": ["monthly average volume", "avg volume 1m"] },
+      { "name": "DMA 50", "unit": "INR", "synonyms": ["50 dma", "50-day moving average"] },
+      { "name": "DMA 200", "unit": "INR", "synonyms": ["200 dma", "200-day moving average"] },
+      { "name": "RSI", "unit": "0-100", "synonyms": ["relative strength index"] }
+    ],
+    "valuation": [
+      { "name": "Price to earning", "unit": "x", "synonyms": ["pe", "p/e", "p e ratio", "price earnings"] },
+      { "name": "Price to book value", "unit": "x", "synonyms": ["pb", "p/b", "p/bv", "price to book"] },
+      { "name": "Price to Sales", "unit": "x", "synonyms": ["ps", "p/s", "price to sales"] },
+      { "name": "PEG Ratio", "unit": "x", "synonyms": ["peg"] },
+      { "name": "EV / EBITDA", "unit": "x", "synonyms": ["ev to ebitda", "ev/ebitda"] },
+      { "name": "Dividend yield", "unit": "%", "synonyms": ["div yield", "dy", "dividend yield %"] },
+      { "name": "Enterprise Value", "unit": "INR Cr", "synonyms": ["ev"] }
+    ],
+    "profitability": [
+      { "name": "Return on equity", "unit": "%", "synonyms": ["roe", "return on equity %"] },
+      { "name": "Return on capital employed", "unit": "%", "synonyms": ["roce"] },
+      { "name": "Return on assets", "unit": "%", "synonyms": ["roa"] },
+      { "name": "OPM", "unit": "%", "synonyms": ["operating profit margin", "operating margin"] },
+      { "name": "NPM last year", "unit": "%", "synonyms": ["net profit margin", "npm"] },
+      { "name": "Interest Coverage Ratio", "unit": "x", "synonyms": ["interest coverage", "icr"] }
+    ],
+    "averages": [
+      { "name": "Average return on equity 3Years", "unit": "%", "synonyms": ["3y avg roe", "3 year avg roe", "3-year avg roe", "average roe 3 years", "avg roe 3y"] },
+      { "name": "Average return on equity 5Years", "unit": "%", "synonyms": ["5y avg roe", "5 year avg roe", "5-year avg roe", "average roe 5 years", "avg roe 5y"] },
+      { "name": "Average return on equity 10Years", "unit": "%", "synonyms": ["10y avg roe", "10 year avg roe", "average roe 10 years"] },
+      { "name": "Average return on capital employed 3Years", "unit": "%", "synonyms": ["3y avg roce", "3 year avg roce", "average roce 3 years"] },
+      { "name": "Average return on capital employed 5Years", "unit": "%", "synonyms": ["5y avg roce", "5 year avg roce", "average roce 5 years"] },
+      { "name": "Average return on capital employed 10Years", "unit": "%", "synonyms": ["10y avg roce", "10 year avg roce", "average roce 10 years"] },
+      { "name": "Average dividend payout 3years", "unit": "%", "synonyms": ["3y avg dividend payout"] }
+    ],
+    "growth": [
+      { "name": "Sales growth", "unit": "%", "synonyms": ["ttm sales growth", "revenue growth"] },
+      { "name": "Sales growth 3Years", "unit": "%", "synonyms": ["3y sales cagr", "3-year sales growth", "sales cagr 3y"] },
+      { "name": "Sales growth 5Years", "unit": "%", "synonyms": ["5y sales cagr", "5-year sales growth"] },
+      { "name": "Sales growth 10Years", "unit": "%", "synonyms": ["10y sales cagr"] },
+      { "name": "Profit growth", "unit": "%", "synonyms": ["ttm profit growth", "earnings growth"] },
+      { "name": "Profit growth 3Years", "unit": "%", "synonyms": ["3y profit cagr", "3-year profit growth"] },
+      { "name": "Profit growth 5Years", "unit": "%", "synonyms": ["5y profit cagr"] },
+      { "name": "Profit growth 10Years", "unit": "%", "synonyms": ["10y profit cagr"] },
+      { "name": "YOY Quarterly sales growth", "unit": "%", "synonyms": ["qoq yoy sales", "quarterly yoy sales growth"] },
+      { "name": "YOY Quarterly profit growth", "unit": "%", "synonyms": ["qoq yoy profit", "quarterly yoy profit growth"] },
+      { "name": "Return on equity 5years growth", "unit": "%", "synonyms": ["5y roe growth"] }
+    ],
+    "leverage_and_liquidity": [
+      { "name": "Debt to equity", "unit": "x", "synonyms": ["d/e", "de ratio", "debt equity"] },
+      { "name": "Debt", "unit": "INR Cr", "synonyms": ["total debt", "borrowings"] },
+      { "name": "Current ratio", "unit": "x", "synonyms": [] },
+      { "name": "Quick ratio", "unit": "x", "synonyms": ["acid test"] },
+      { "name": "Working Capital Days", "unit": "days", "synonyms": ["wc days", "working capital days"] }
+    ],
+    "cash_flow": [
+      { "name": "Cash from operations last year", "unit": "INR Cr", "synonyms": ["cfo", "operating cash flow", "cash from ops"] },
+      { "name": "Free cash flow last year", "unit": "INR Cr", "synonyms": ["fcf", "free cash flow"] },
+      { "name": "Free cash flow 3years", "unit": "INR Cr", "synonyms": ["3y fcf"] },
+      { "name": "Free cash flow 5years", "unit": "INR Cr", "synonyms": ["5y fcf"] },
+      { "name": "Free cash flow 7years", "unit": "INR Cr", "synonyms": ["7y fcf"] },
+      { "name": "Free cash flow 10years", "unit": "INR Cr", "synonyms": ["10y fcf"] }
+    ],
+    "financials": [
+      { "name": "Sales", "unit": "INR Cr", "synonyms": ["revenue", "total revenue", "ttm sales"] },
+      { "name": "Sales last year", "unit": "INR Cr", "synonyms": ["last year revenue"] },
+      { "name": "Net profit", "unit": "INR Cr", "synonyms": ["pat", "profit after tax", "net income"] },
+      { "name": "Net Profit latest quarter", "unit": "INR Cr", "synonyms": ["quarterly net profit", "latest quarter profit"] },
+      { "name": "Sales latest quarter", "unit": "INR Cr", "synonyms": ["quarterly sales", "latest quarter sales"] },
+      { "name": "EPS", "unit": "INR", "synonyms": ["earnings per share"] },
+      { "name": "EPS latest quarter", "unit": "INR", "synonyms": ["quarterly eps", "last quarter eps"] },
+      { "name": "EPS preceding quarter", "unit": "INR", "synonyms": ["previous quarter eps"] },
+      { "name": "EPS preceding year quarter", "unit": "INR", "synonyms": ["yoy quarter eps"] },
+      { "name": "EPS preceding year", "unit": "INR", "synonyms": ["last year eps"] },
+      { "name": "EPS last year", "unit": "INR", "synonyms": ["fy eps"] },
+      { "name": "Reserves", "unit": "INR Cr", "synonyms": ["reserves and surplus"] },
+      { "name": "Equity capital", "unit": "INR Cr", "synonyms": ["share capital", "paid up capital"] },
+      { "name": "Contingent liabilities", "unit": "INR Cr", "synonyms": [] }
+    ],
+    "ownership": [
+      { "name": "Promoter holding", "unit": "%", "synonyms": ["promoter stake", "promoters"] },
+      { "name": "Unpledged promoter holding", "unit": "%", "synonyms": ["clean promoter holding"] },
+      { "name": "Pledged percentage", "unit": "%", "synonyms": ["promoter pledge", "pledge"] },
+      { "name": "Change in promoter holding", "unit": "%", "synonyms": ["promoter holding change"] },
+      { "name": "Change in promoter holding 3Years", "unit": "%", "synonyms": ["3y change in promoter holding"] },
+      { "name": "FII holding", "unit": "%", "synonyms": ["fii stake", "fpi"] },
+      { "name": "DII holding", "unit": "%", "synonyms": ["dii stake", "domestic institutions"] },
+      { "name": "Public holding", "unit": "%", "synonyms": ["retail holding"] }
+    ],
+    "scores": [
+      { "name": "Piotroski score", "unit": "0-9", "synonyms": ["piotroski", "p score"] },
+      { "name": "Altman Z Score", "unit": "n", "synonyms": ["altman z", "z score"] },
+      { "name": "G Factor", "unit": "0-10", "synonyms": ["g-factor", "g score", "growth score"] }
+    ]
+  },
+  "phrase_hints": {
+    "comparators": {
+      ">": ["more than", "greater than", "above", "over", "higher than", "exceeds"],
+      "<": ["less than", "below", "under", "lower than", "no more than"],
+      ">=": ["at least", "no less than", "minimum of", ">="],
+      "<=": ["at most", "maximum of", "<="],
+      "=": ["equal to", "equals", "exactly", "is"]
+    },
+    "logical": {
+      "AND": ["and", "with", "plus", "combined with"],
+      "OR": ["or", "either"]
+    }
+  }
+}
