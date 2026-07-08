@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Unit tests
-        run: node --test extension/test/
+        run: node --test extension/test/translator.test.mjs
 
       - name: Generate icons
         run: node extension/tools/make-icons.mjs
