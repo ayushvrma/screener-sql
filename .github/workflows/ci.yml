@@ -29,11 +29,14 @@ jobs:
       - name: Generate icons
         run: node extension/tools/make-icons.mjs
 
-      - name: web-ext lint (against the shipped zip only — skips dev tools/tests)
-        run: npx --yes web-ext@8 lint --source-dir extension/dist --self-hosted --no-config-discovery
-
       - name: Build zip
         run: node extension/tools/build.mjs
+
+      - name: web-ext lint (unpacked zip via a temp dir — Chrome MV3 checks)
+        run: |
+          mkdir -p /tmp/webext-src
+          unzip -q extension/dist/screener-nl-*.zip -d /tmp/webext-src
+          npx --yes web-ext@8 lint --source-dir /tmp/webext-src --self-hosted --no-config-discovery
 
       - uses: actions/upload-artifact@v4
         if: matrix.node == '22'
