@@ -29,9 +29,8 @@ jobs:
       - name: Generate icons
         run: node extension/tools/make-icons.mjs
 
-      - name: web-ext lint (Mozilla's extension linter; also flags Chrome MV3 issues)
-        run: npx --yes web-ext@8 lint --source-dir extension --self-hosted --no-config-discovery
-        continue-on-error: false
+      - name: web-ext lint (against the shipped zip only — skips dev tools/tests)
+        run: npx --yes web-ext@8 lint --source-dir extension/dist --self-hosted --no-config-discovery
 
       - name: Build zip
         run: node extension/tools/build.mjs
