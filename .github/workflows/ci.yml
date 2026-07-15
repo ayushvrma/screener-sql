@@ -18,8 +18,8 @@ jobs:
       matrix:
         node: ["20", "22"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
 
@@ -35,7 +35,7 @@ jobs:
       - name: Validate packaged zip (MV3, file refs, PNG icons, HTTPS hosts)
         run: node extension/tools/validate-package.mjs extension/dist/screener-nl-*.zip
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: matrix.node == '22'
         with:
           name: extension-zip
